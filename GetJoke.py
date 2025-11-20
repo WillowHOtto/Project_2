@@ -7,6 +7,12 @@ import json
 import urllib.request
 import urllib.parse
 
+#IMPORTANT:
+
+# This code is the standalone version of App.py. This does NOT use Flask. 
+
+
+
 # search icanhazdadjoke API for a keyword to retrieve relevant joke
 # if no keyword, return random joke from api
 # user agent suggested by API docs: https://icanhazdadjoke.com/api for tracking API usage

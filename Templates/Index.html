@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dad Joke Personalizer</title>
+    <style>
+        .hidden { display: none; }
+        .loading { color: blue; }
+        .error { color: red; }
+        .joke-card { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Dad Joke Personalizer</h1>
+    <p>Get dad jokes and personalize them with AI!</p>
+
+    <form id="jokeForm">
+        <div>
+            <label for="keyword">Search for jokes about:</label><br>
+            <input type="text" id="keyword" name="keyword" 
+                   placeholder="e.g., cats, dogs, computers... (leave blank for random)" style="width: 300px;">
+        </div>
+        
+        <div>
+            <label for="personalization">Joke Style:</label><br>
+            <select id="personalization" name="personalization">
+                <option value="silly">Silly</option>
+                <option value="punny">Punny</option>
+                <option value="nerdy">Nerdy</option>
+                <option value="sarcastic">Sarcastic</option>
+                <option value="cheesy">Cheesy</option>
+                <option value="one-liner">One-liner</option>
+                <option value="cringe">Cringe</option>
+                <option value="wholesome">Wholesome</option>
+            </select>
+        </div>
+        
+        <br>
+        <button type="submit" id="getJokeBtn">Get Personalized Joke</button>
+    </form>
+
+    <div id="loading" class="loading hidden">
+        <p>Gemini AI is crafting your personalized joke...</p>
+    </div>
+
+    <div id="results" class="results hidden">
+        <div class="joke-card">
+            <h3>Original Dad Joke</h3>
+            <p id="originalJoke"></p>
+            <small id="jokeSource"></small>
+        </div>
+        
+        <div class="joke-card">
+            <h3>AI-Personalized Joke</h3>
+            <p id="personalizedJoke"></p>
+        </div>
+    </div>
+
+    <div id="error" class="error hidden">
+        <p id="errorMessage"></p>
+    </div>
+
+    <script>
+        document.getElementById('jokeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const keyword = document.getElementById('keyword').value;
+            const personalization = document.getElementById('personalization').value;
+            const getJokeBtn = document.getElementById('getJokeBtn');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const error = document.getElementById('error');
+            
+            // Show loading, hide results and error
+            loading.classList.remove('hidden');
+            results.classList.add('hidden');
+            error.classList.add('hidden');
+            getJokeBtn.disabled = true;
+            getJokeBtn.textContent = 'Creating Joke...';
+            
+            try {
+                const response = await fetch('/get_joke', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        keyword: keyword,
+                        personalization: personalization
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('originalJoke').textContent = data.original_joke;
+                    document.getElementById('personalizedJoke').textContent = data.personalized_joke;
+                    document.getElementById('jokeSource').textContent = `Source: ${data.source} joke`;
+                    results.classList.remove('hidden');
+                } else {
+                    throw new Error(data.error);
+                }
+                
+            } catch (error) {
+                document.getElementById('errorMessage').textContent = error.message;
+                error.classList.remove('hidden');
+            } finally {
+                loading.classList.add('hidden');
+                getJokeBtn.disabled = false;
+                getJokeBtn.textContent = 'Get Personalized Joke';
+            }
+        });
+    </script>
+</body>
+</html>

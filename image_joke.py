@@ -125,7 +125,16 @@ if __name__ == "__main__":
 
     # --- B. Gemini Personalization ---
 
-    contents = f"""Personalize a dad joke using user's personalization input: {personalization}. Original dad joke: {joke.replace('\n', ' ')}"""
+      # Prepare content for Gemini
+    clean_joke = joke.replace('\n', ' ')
+    contents = f"""Personalize a dad joke using user's personalization input.
+
+{personalization}
+
+Original dad joke:
+{clean_joke}
+
+"""
     
     try:
         response = client_gemini.models.generate_content(

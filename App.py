@@ -7,6 +7,8 @@ import json
 import urllib.request
 import urllib.parse
 
+import requests  # Used for downloading the image
+
 app = Flask(__name__)
 
 # pydantic model
@@ -24,6 +26,49 @@ HEADERS = {
 
 GOOGLE_API_KEY = os.environ.get('GEMINI_API_KEY')
 client = genai.Client(api_key=GOOGLE_API_KEY)
+
+def generate_image_from_text(prompt_text: str):
+    """Generates an image from a given text prompt using OpenAI's DALL-E 3."""
+    try:
+        # Create a more descriptive prompt for DALL-E based on the joke text
+        image_prompt = f"A funny, whimsical, single-panel cartoon illustrating the concept of: '{prompt_text}'"
+        
+        print(f"\n Generating image for prompt: {image_prompt[:80]}...")
+        
+        response = client.models.generate_images(
+            model="imagen-4.0-generate-001",
+            prompt=image_prompt,
+            config=dict(
+            number_of_images=1, 
+            output_mime_type="image/jpeg",
+            aspect_ratio="1:1",
+            )
+        )
+        return response.generated_images[0].image.image_bytes
+    except Exception as e:
+        print(f"An error occurred during image generation: {e}")
+        return None
+
+def save_image_bytes_to_local_directory(image_bytes: bytes, filename: str = "personalized_joke_image.jpg"):
+    """
+    Saves image bytes directly to a file in the same directory.
+    This is the function needed when the API returns binary data (bytes), not a URL.
+    """
+    if not image_bytes:
+        print("Download failed: No image data provided.")
+        return
+
+    try:
+        # CRITICAL: Open the file in 'wb' (write-binary) mode
+        with open(filename, 'wb') as f:
+            f.write(image_bytes)
+        
+        print(f"✅ Image successfully saved to: {filename}")
+
+    except Exception as e:
+        print(f"An unexpected error occurred during file save: {e}")
+
+
 
 def fetch_joke(keyword):
     """Fetch a joke from the API based on keyword or get a random one."""
@@ -117,6 +162,50 @@ Original dad joke:
         
     except Exception as e:
         return jsonify({'error': f'An error occurred: {str(e)}'}), 500
+    
+
+def generate_image_from_text(prompt_text: str):
+    """Generates an image from a given text prompt using OpenAI's DALL-E 3."""
+    try:
+        # Create a more descriptive prompt for DALL-E based on the joke text
+        image_prompt = f"A funny, whimsical, single-panel cartoon illustrating the concept of: '{prompt_text}'"
+        
+        print(f"\n Generating image for prompt: {image_prompt[:80]}...")
+        
+        response = client.models.generate_images(
+            model="imagen-4.0-generate-001",
+            prompt=image_prompt,
+            config=dict(
+            number_of_images=1, 
+            output_mime_type="image/jpeg",
+            aspect_ratio="1:1",
+            )
+        )
+        return response.generated_images[0].image.image_bytes
+    except Exception as e:
+        print(f"An error occurred during image generation: {e}")
+        return None
+
+def save_image_bytes_to_local_directory(image_bytes: bytes, filename: str = "personalized_joke_image.jpg"):
+    """
+    Saves image bytes directly to a file in the same directory.
+    This is the function needed when the API returns binary data (bytes), not a URL.
+    """
+    if not image_bytes:
+        print("Download failed: No image data provided.")
+        return
+
+    try:
+        # CRITICAL: Open the file in 'wb' (write-binary) mode
+        with open(filename, 'wb') as f:
+            f.write(image_bytes)
+        
+        print(f"✅ Image successfully saved to: {filename}")
+
+    except Exception as e:
+        print(f"An unexpected error occurred during file save: {e}")
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

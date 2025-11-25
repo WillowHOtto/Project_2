@@ -20,7 +20,7 @@ class JokeResponse(BaseModel):
 api = 'https://icanhazdadjoke.com'
 SEARCH_URL = f'{api}/search'
 HEADERS = {
-    'User-Agent': 'My Library (https://github.com/rosymaple/gemini)',
+    'User-Agent': 'My Library (https://github.com/rosymaple/Project_2_candace)',
     'Accept': 'application/json'
 }
 
